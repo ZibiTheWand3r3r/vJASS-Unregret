@@ -1,7 +1,7 @@
 globals
     integer array                              RESEARCH
     integer array                              RESEARCH_COST
-    integer                                   RESEARCH_COUNT
+    integer                                    RESEARCH_COUNT
 endglobals
 //================================================
 function InitTrig_ResearchSetting takes nothing returns nothing
