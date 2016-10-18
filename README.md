@@ -2,11 +2,9 @@
 
 create new trigger, name it:
 ResearchSetting
-Convert To Custom Text
-delete all inside
-paste code from ResearchSetting.j
+Convert To Custom Text, delete all inside, paste code from ResearchSetting.j
 
-repeat for BeginsResearch , CancelResearch
+repeat for BeginsResearch , CancelResearch<br>
 triggers sequence:
 ResearchSetting
 BeginsResearch
