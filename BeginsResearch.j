@@ -31,7 +31,7 @@ function Trig_BeginsResearch_Actions takes nothing returns nothing
     if udg_Kills[id] >= cost then
         set udg_Kills[id] = udg_Kills[id] - cost
         //multiboard
-        
+        call MultiboardSetItemValueBJ(bj_lastCreatedMultiboard, 2, udg_Multiboard_Spots[id], ( "|cffd700d7" + ( I2S(udg_Kills[id]) + "|r" )))
     else
         call DisableTrigger(gg_trg_CancelResearch)
         call IssueImmediateOrderById(u, 851976)
