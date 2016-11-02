@@ -38,6 +38,27 @@ function Trig_PreplacedWarlords takes nothing returns nothing
     set bj_wantDestroyGroup=true
     call ForGroupBJ(GetUnitsInRectMatching(bj_mapInitialPlayableArea, Condition(function Trig_PreplacedWarlords_Cond)), function Trig_PreplacedWarlords_Act )
 endfunction
+
+// when hero learns aura: update nearby alied unit
+function Trig_BloodAuraLearns_Cond takes nothing returns boolean
+    return GetLearnedSkill() == ABI_BLOOD_AURA
+endfunction
+function Trig_BloodAuraLearns_Act takes nothing returns nothing
+    local unit u = null    
+    call GroupEnumUnitsInRange(udg_spell_ug, GetUnitX(GetLearningUnit()), GetUnitY(GetLearningUnit()), 900.00, null)
+    loop
+        set u = FirstOfGroup(udg_spell_ug) 
+        exitwhen u == null
+        if IsUnitAlive(u) and (not IsUnitType(u, UNIT_TYPE_FLYING)) and (not IsUnitType(u, UNIT_TYPE_MECHANICAL)) and (not IsUnitType(u, UNIT_TYPE_STRUCTURE)) then
+            call GroupAddUnit(udg_spell_Group[2], u)
+        endif    
+        call GroupRemoveUnit(udg_spell_ug, u)
+    endloop
+    call GroupClear (udg_spell_ug)
+    //---    
+    set u=null
+endfunction
+
 //=================================================================
 //=================================================================
 function InitTrig_BloodAura takes nothing returns nothing
@@ -47,6 +68,12 @@ function InitTrig_BloodAura takes nothing returns nothing
     call TriggerAddAction(t, function Trig_RegisterWarlord1_Actions)
 
     call Trig_PreplacedWarlords()
+    
+    set t = CreateTrigger() // hero learns aura:
+    call TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_HERO_SKILL)
+    call TriggerAddCondition(t, Condition( function Trig_BloodAuraLearns_Cond))
+    call TriggerAddAction(t, function Trig_BloodAuraLearns_Act)
+    
     
     set t=null
 endfunction
