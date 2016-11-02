@@ -1,0 +1,52 @@
+// - spell Group [2] -
+function BloodAura_CreateTriggerCond takes nothing returns boolean
+    local unit u = GetTriggerUnit()
+    if IsUnitAlive(u) and (not IsUnitType(u, UNIT_TYPE_FLYING)) and (not IsUnitType(u, UNIT_TYPE_MECHANICAL)) and (not IsUnitType(u, UNIT_TYPE_STRUCTURE)) then
+        call GroupAddUnit(udg_spell_Group[2],  u)
+    endif
+    set u=null
+    return false
+endfunction
+
+//  it registers trigger which fires every time unit comes in 900 range from Warlord, 
+// (one trigger for each Warlord hero), so no need for periodical check for new units in range
+function BloodAura_CreateTrigger takes unit u returns nothing
+    local trigger t = CreateTrigger()
+    call TriggerRegisterUnitInRange(t, u, 900, null)
+    call TriggerAddCondition(t, Condition( function BloodAura_CreateTriggerCond))
+    set t=null
+endfunction
+
+//-- Warlord enters map
+function Trig_RegisterWarlord1_Conditions takes nothing returns boolean
+    return GetUnitTypeId(udg_UDexUnits[udg_UDex]) == WARLORD
+endfunction
+function Trig_RegisterWarlord1_Actions takes nothing returns nothing
+    call BloodAura_CreateTrigger(udg_UDexUnits[udg_UDex])
+    call EnableTrigger( gg_trg_LoopBloodAura )
+endfunction
+
+//----- for pre placed Warlords heroes
+function Trig_PreplacedWarlords_Cond takes nothing returns boolean
+    return ( GetUnitTypeId(GetFilterUnit()) == WARLORD )
+endfunction
+function Trig_PreplacedWarlords_Act takes nothing returns nothing
+    call BloodAura_CreateTrigger(GetEnumUnit())
+    call EnableTrigger( gg_trg_LoopBloodAura )    
+endfunction
+function Trig_PreplacedWarlords takes nothing returns nothing
+    set bj_wantDestroyGroup=true
+    call ForGroupBJ(GetUnitsInRectMatching(bj_mapInitialPlayableArea, Condition(function Trig_PreplacedWarlords_Cond)), function Trig_PreplacedWarlords_Act )
+endfunction
+//=================================================================
+//=================================================================
+function InitTrig_BloodAura takes nothing returns nothing
+    local trigger t = CreateTrigger()
+    call TriggerRegisterVariableEvent(t, "udg_UnitIndexEvent", EQUAL, 1.00 ) //event unit: udg_UDexUnits[udg_UDex] is created
+    call TriggerAddCondition(t, Condition( function Trig_RegisterWarlord1_Conditions))
+    call TriggerAddAction(t, function Trig_RegisterWarlord1_Actions)
+
+    call Trig_PreplacedWarlords()
+    
+    set t=null
+endfunction
