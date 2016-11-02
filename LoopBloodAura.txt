@@ -1,0 +1,40 @@
+//===============================
+function Trig_BloodAuraLoop_Enum takes nothing returns nothing
+    local unit u = GetEnumUnit()
+    local integer b1 = GetUnitAbilityLevel(u, BLOOD_AURA_BUFF[1])
+    local integer b2 = GetUnitAbilityLevel(u, BLOOD_AURA_BUFF[2])
+    local integer b3 = GetUnitAbilityLevel(u, BLOOD_AURA_BUFF[3])
+    if b1==0 and b2==0 and b3==0 then // no buffs
+        if GetUnitTypeId(u) != WARLORD then // never remove hero from group
+            call GroupRemoveUnit(udg_spell_Group[2], u)
+        endif
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[1])
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[2])
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[3])
+    elseif b1==1 and b2==0 and b3==0 then // buff "1"
+        call UnitAddAbility(u, BLOOD_AURA_LIFE[1])
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[2])
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[3])   
+    elseif b2==1 and b3==0 then // buff "2"
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[1])
+        call UnitAddAbility(u, BLOOD_AURA_LIFE[2])
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[3])        
+    elseif b3==1 then // buff "3"
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[1])
+        call UnitRemoveAbility(u, BLOOD_AURA_LIFE[2])
+        call UnitAddAbility(u, BLOOD_AURA_LIFE[3])                        
+    endif
+    set u=null
+endfunction
+//-------------------------------------------
+function Trig_BloodAuraLoop_Actions takes nothing returns boolean
+    call ForGroup(udg_spell_Group[2], function Trig_BloodAuraLoop_Enum)
+    return false
+endfunction
+//===========================================================
+function InitTrig_LoopBloodAura takes nothing returns nothing
+    set gg_trg_LoopBloodAura = CreateTrigger(  )
+    call DisableTrigger( gg_trg_LoopBloodAura )
+    call TriggerRegisterTimerEventPeriodic( gg_trg_LoopBloodAura, 2 )
+    call TriggerAddCondition(gg_trg_LoopBloodAura, Condition(function Trig_BloodAuraLoop_Actions))
+endfunction
