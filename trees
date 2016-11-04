@@ -1,0 +1,47 @@
+globals
+    constant real              TREE_RESSURECT_INTERVAL = 360.00 // <-- you can change this value [sec]
+    trigger                         trgTreeDies
+endglobals
+//-----------------------
+function IsAreaEmptyAroundTree takes real x, real y returns boolean
+    local unit u = null
+    local integer count = 0
+    call GroupEnumUnitsInRange(udg_spell_ug, x, y, 250.00, null)
+    loop
+        set u = FirstOfGroup(udg_spell_ug)
+        exitwhen u == null or count>0             
+        set count = count + 1
+        call GroupRemoveUnit(udg_spell_ug, u)
+    endloop
+    call GroupClear(udg_spell_ug)
+    set u = null
+    return count==0
+endfunction
+//-----------------------
+function TreeDies_Actions takes nothing returns nothing
+    call TriggerSleepAction(TREE_RESSURECT_INTERVAL)
+    loop
+        exitwhen IsAreaEmptyAroundTree(GetWidgetX(GetDyingDestructable()), GetWidgetY(GetDyingDestructable()))
+        call TriggerSleepAction(5.00)        
+    endloop
+    call DestructableRestoreLife(GetDyingDestructable(), GetDestructableMaxLife(GetDyingDestructable()), false)
+endfunction
+//-----------------------
+//-----------------------
+function TreesInit_ActionsEnum takes nothing returns nothing
+    if IsDestructableTree(GetEnumDestructable()) then
+        call TriggerRegisterDeathEvent(trgTreeDies, GetEnumDestructable())
+    endif
+endfunction
+//---
+function TreesInit_Actions takes nothing returns nothing
+    // 'if then else' is needed to add only trees (not barrels, crates, rock chunks etc)
+    call EnumDestructablesInRectAll(bj_mapInitialPlayableArea, function TreesInit_ActionsEnum)
+endfunction
+//========================================================
+function InitTrig_Trees takes nothing returns nothing
+    set trgTreeDies = CreateTrigger()
+    call TriggerAddAction(trgTreeDies, function TreeDies_Actions)
+    set gg_trg_Trees = CreateTrigger()
+    call TriggerAddAction( gg_trg_Trees, function TreesInit_Actions )
+endfunction
